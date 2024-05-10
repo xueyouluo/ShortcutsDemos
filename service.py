@@ -4,6 +4,7 @@ from typing import Optional
 import enum
 
 from llm import call_gpt4,call_gpt4v,call_zhipu,call_zhipu_vision
+from tts import tts
 
 # 创建一个FastAPI实例
 app = FastAPI()
@@ -30,8 +31,16 @@ class PromptRequest(BaseModel):
     prompt_model_name: PromptModelName = PromptModelName.glm4
     temperature: Optional[float] = 0.5
 
+class TTSRequest(BaseModel):
+    text: str
+    app_id: str
+    access_token: str
+
 class ModelResponse(BaseModel):
     content: str
+
+class TTSResponse(BaseModel):
+    data: str
 
 @app.post("/image_prompt")
 async def image_prompt(image_request: ImageRequest):
@@ -52,3 +61,8 @@ async def text_prompt(prompt_request: PromptRequest):
     else:
         raise ValueError("Invalid prompt model name")
     return ModelResponse(content=content)
+
+@app.post("/tts")
+async def tts_request(tts_request: TTSRequest):
+    tts_response = tts(tts_request.app_id, tts_request.access_token, tts_request.text)
+    return TTSResponse(data=tts_response)
